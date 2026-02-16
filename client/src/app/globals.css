@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #1a0f08;
+  background-image:
+    radial-gradient(ellipse at top, rgba(168, 114, 50, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(139, 90, 43, 0.05) 0%, transparent 50%);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar for chat */
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(139, 90, 43, 0.3);
+  border-radius: 3px;
+}
