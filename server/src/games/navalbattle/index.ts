@@ -317,14 +317,12 @@ export const navalbattleEngine: GameEngine<NavalBattleState, NavalBattleMove> = 
       }
     }
 
-    // Only reveal sunk ships to the opponent
-    const opponentShipsSunk: Ship[] = opponentBoard.ships
+    // Only reveal sunk ship names and sizes to the opponent (not positions)
+    const opponentShipsSunk = opponentBoard.ships
       .filter(ship => ship.sunk)
       .map(ship => ({
         name: ship.name,
         size: ship.size,
-        positions: ship.positions.map(p => ({ ...p })),
-        hits: ship.hits,
         sunk: true,
       }));
 

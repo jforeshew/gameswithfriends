@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Room, Player, GameType, ChatMessage } from '../types';
 
 const rooms = new Map<string, Room>();
+const socketIndex = new Map<string, { roomCode: string; playerId: string }>();
 
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // excluded confusing chars
@@ -88,17 +89,27 @@ export function reconnectPlayer(
 }
 
 export function disconnectPlayer(socketId: string): { room: Room; player: Player } | null {
-  for (const room of rooms.values()) {
-    const player = room.players.find(p => p.socketId === socketId);
-    if (player) {
-      player.connected = false;
-      player.disconnectedAt = Date.now();
-      player.socketId = null;
-      room.lastActivity = Date.now();
-      return { room, player };
-    }
+  const entry = socketIndex.get(socketId);
+  if (!entry) return null;
+
+  const room = rooms.get(entry.roomCode);
+  if (!room) {
+    socketIndex.delete(socketId);
+    return null;
   }
-  return null;
+
+  const player = room.players.find(p => p.id === entry.playerId);
+  if (!player) {
+    socketIndex.delete(socketId);
+    return null;
+  }
+
+  player.connected = false;
+  player.disconnectedAt = Date.now();
+  player.socketId = null;
+  socketIndex.delete(socketId);
+  room.lastActivity = Date.now();
+  return { room, player };
 }
 
 export function removePlayerFromRoom(roomCode: string, playerId: string): Room | null {
@@ -117,11 +128,30 @@ export function removePlayerFromRoom(roomCode: string, playerId: string): Room |
 }
 
 export function findRoomBySocketId(socketId: string): { room: Room; player: Player } | null {
-  for (const room of rooms.values()) {
-    const player = room.players.find(p => p.socketId === socketId);
-    if (player) return { room, player };
+  const entry = socketIndex.get(socketId);
+  if (!entry) return null;
+
+  const room = rooms.get(entry.roomCode);
+  if (!room) {
+    socketIndex.delete(socketId);
+    return null;
   }
-  return null;
+
+  const player = room.players.find(p => p.id === entry.playerId);
+  if (!player) {
+    socketIndex.delete(socketId);
+    return null;
+  }
+
+  return { room, player };
+}
+
+export function updateSocketIndex(socketId: string, roomCode: string, playerId: string): void {
+  socketIndex.set(socketId, { roomCode, playerId });
+}
+
+export function removeSocketIndex(socketId: string): void {
+  socketIndex.delete(socketId);
 }
 
 export function addChatMessage(room: Room, playerName: string | null, text: string, isSystem: boolean): ChatMessage {
@@ -150,6 +180,12 @@ setInterval(() => {
   for (const [code, room] of rooms.entries()) {
     const allDisconnected = room.players.every(p => !p.connected);
     if (allDisconnected && now - room.lastActivity > 5 * 60 * 1000) {
+      // Clean up socket index entries for this room's players
+      for (const player of room.players) {
+        if (player.socketId) {
+          socketIndex.delete(player.socketId);
+        }
+      }
       rooms.delete(code);
       console.log(`Cleaned up stale room: ${code}`);
     }

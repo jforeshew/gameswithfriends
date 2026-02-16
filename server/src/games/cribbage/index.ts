@@ -862,9 +862,19 @@ export const cribbageEngine: GameEngine<CribbageState, CribbageMove> = {
     const otherP = otherPlayer(playerNum);
 
     // Build opponent hand - show cards face down during discarding/pegging
+    // Only reveal opponent's hand after their counting step completes
     let opponentHand: (Card | null)[];
-    if (state.phase === 'counting' || state.phase === 'finished') {
+    if (state.phase === 'finished') {
       opponentHand = cloneCards(state.originalHands[otherP]);
+    } else if (state.phase === 'counting') {
+      const nd = nonDealer(state);
+      const d = state.dealer;
+      // Non-dealer's hand is revealed at step 0+ (counted first)
+      // Dealer's hand is revealed at step 1+ (counted second)
+      const shouldReveal =
+        (otherP === nd && state.countingPhaseStep >= 0) ||
+        (otherP === d && state.countingPhaseStep >= 1);
+      opponentHand = shouldReveal ? cloneCards(state.originalHands[otherP]) : state.hands[otherP].map(() => null);
     } else {
       opponentHand = state.hands[otherP].map(() => null); // hidden
     }

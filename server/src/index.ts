@@ -16,6 +16,7 @@ import {
   findRoomBySocketId,
   addChatMessage,
   getPlayersInfo,
+  updateSocketIndex,
 } from './rooms';
 import { checkersEngine } from './games/checkers';
 import { chessEngine } from './games/chess';
@@ -111,6 +112,7 @@ io.on('connection', (socket) => {
     if ('room' in reconnResult) {
       const { room, player } = reconnResult;
       player.socketId = socket.id;
+      updateSocketIndex(socket.id, room.code, player.id);
       socket.join(room.code);
       console.log(`[auth] auto-associated ${player.name} with socket ${socket.id} in room ${room.code}`);
 
@@ -138,6 +140,7 @@ io.on('connection', (socket) => {
 
     const { room, player } = createRoom(gameType, playerName.trim());
     player.socketId = socket.id;
+    updateSocketIndex(socket.id, room.code, player.id);
     socket.join(room.code);
 
     addChatMessage(room, null, `${player.name} created the room`, true);
@@ -170,6 +173,7 @@ io.on('connection', (socket) => {
       if ('room' in reconnResult) {
         const { room, player } = reconnResult;
         player.socketId = socket.id;
+        updateSocketIndex(socket.id, room.code, player.id);
         socket.join(room.code);
 
         // Clear disconnect timer
@@ -220,6 +224,7 @@ io.on('connection', (socket) => {
 
     const { room, player } = result;
     player.socketId = socket.id;
+    updateSocketIndex(socket.id, room.code, player.id);
     socket.join(room.code);
 
     addChatMessage(room, null, `${player.name} joined the room`, true);
@@ -447,8 +452,13 @@ io.on('connection', (socket) => {
     const found = findRoomBySocketId(socket.id);
     if (!found) return;
 
-    const { room } = found;
+    const { room, player } = found;
     if (room.players.length < 2) return;
+
+    if (player.id !== room.creatorId) {
+      socket.emit('room:error', { message: 'Only the room creator can restart the game' });
+      return;
+    }
 
     if (room.status !== 'finished') {
       socket.emit('room:error', { message: 'Game must be finished to restart' });
@@ -544,11 +554,14 @@ io.on('connection', (socket) => {
         const otherPlayer = currentRoom.players.find(p => p.id !== player.id);
         if (!otherPlayer) return;
 
-        if (currentRoom.gameState) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const state = currentRoom.gameState as any;
-          state.winner = otherPlayer.id;
-          state.winReason = `${player.name} disconnected (forfeit)`;
+        if (currentRoom.gameState && typeof currentRoom.gameState === 'object') {
+          try {
+            const state = currentRoom.gameState as Record<string, unknown>;
+            state.winner = otherPlayer.id;
+            state.winReason = `${player.name} disconnected (forfeit)`;
+          } catch (err) {
+            console.error(`[forfeit] Error updating game state:`, err);
+          }
         }
         currentRoom.status = 'finished';
 
