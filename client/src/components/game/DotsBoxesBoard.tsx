@@ -5,8 +5,21 @@ import { Position } from '@/lib/types';
 
 type DotsBoxesColor = 'red' | 'blue';
 
+interface DotsBoxesState {
+  gridSize: number;
+  lines: string[];
+  lineOwners: Record<string, DotsBoxesColor>;
+  boxes: (DotsBoxesColor | null)[][];
+  currentTurn: DotsBoxesColor;
+  players: { red: string; blue: string };
+  scores: { red: number; blue: number };
+  winner: string | null;
+  winReason: string | null;
+  lastLine: string | null;
+}
+
 interface DotsBoxesBoardProps {
-  gameState: any;
+  gameState: DotsBoxesState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

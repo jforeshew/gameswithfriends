@@ -5,8 +5,18 @@ import { Position } from '@/lib/types';
 
 type MancalaSide = 'top' | 'bottom';
 
+interface MancalaState {
+  pits: [number[], number[]];
+  stores: [number, number];
+  currentTurn: MancalaSide;
+  players: { top: string; bottom: string };
+  winner: string | null;
+  winReason: string | null;
+  lastMove: { side: number; pit: number } | null;
+}
+
 interface MancalaBoardProps {
-  gameState: any; // MancalaState from server
+  gameState: MancalaState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

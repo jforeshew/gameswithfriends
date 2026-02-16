@@ -17,7 +17,7 @@ interface GomokuState {
 }
 
 interface GomokuBoardProps {
-  gameState: any;
+  gameState: GomokuState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

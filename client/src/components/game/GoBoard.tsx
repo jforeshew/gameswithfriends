@@ -19,7 +19,7 @@ interface GoState {
 }
 
 interface GoBoardProps {
-  gameState: any;
+  gameState: GoState;
   playerId: string;
   onMove: (from: { row: number; col: number }, to: { row: number; col: number }) => void;
   onQuit: () => void;

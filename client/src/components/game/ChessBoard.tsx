@@ -5,7 +5,7 @@ import { Position } from '@/lib/types';
 import { getValidMoves, ChessState, ChessPiece, ChessColor } from '@/lib/chessValidMoves';
 
 interface ChessBoardProps {
-  gameState: any;
+  gameState: ChessState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

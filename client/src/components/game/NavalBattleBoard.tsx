@@ -37,7 +37,7 @@ interface NavalBattleViewState {
 }
 
 interface NavalBattleBoardProps {
-  gameState: any;
+  gameState: NavalBattleViewState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

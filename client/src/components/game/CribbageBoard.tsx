@@ -45,7 +45,7 @@ interface CribbageViewState {
 }
 
 interface CribbageBoardProps {
-  gameState: any;
+  gameState: CribbageViewState;
   playerId: string;
   onMove: (from: { row: number; col: number }, to: { row: number; col: number }) => void;
   onQuit: () => void;

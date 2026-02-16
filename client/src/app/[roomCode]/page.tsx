@@ -23,6 +23,31 @@ import { ConnectionStatus } from '@/components/ui/ConnectionStatus';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { GameType } from '@/lib/types';
+import { ComponentType } from 'react';
+
+interface BoardProps {
+  gameState: unknown;
+  playerId: string;
+  onMove: (from: { row: number; col: number }, to: { row: number; col: number }) => void;
+  onQuit: () => void;
+}
+
+const BOARD_COMPONENTS: Record<GameType, ComponentType<BoardProps>> = {
+  checkers: Board as ComponentType<BoardProps>,
+  chess: ChessBoard as ComponentType<BoardProps>,
+  connect4: Connect4Board as ComponentType<BoardProps>,
+  reversi: ReversiBoard as ComponentType<BoardProps>,
+  tictactoe: TicTacToeBoard as ComponentType<BoardProps>,
+  gomoku: GomokuBoard as ComponentType<BoardProps>,
+  mancala: MancalaBoard as ComponentType<BoardProps>,
+  dotsboxes: DotsBoxesBoard as ComponentType<BoardProps>,
+  navalbattle: NavalBattleBoard as ComponentType<BoardProps>,
+  go: GoBoard as ComponentType<BoardProps>,
+  backgammon: BackgammonBoard as ComponentType<BoardProps>,
+  cribbage: CribbageBoard as ComponentType<BoardProps>,
+};
 
 export default function RoomPage({ params }: { params: Promise<{ roomCode: string }> }) {
   const { roomCode } = use(params);
@@ -314,102 +339,21 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
           <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto">
             {/* Game Board */}
             <div className="flex-1 flex items-start justify-center">
-              {(!game.gameType || game.gameType === 'checkers') && (
-                <Board
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'chess' && (
-                <ChessBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'connect4' && (
-                <Connect4Board
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'reversi' && (
-                <ReversiBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'tictactoe' && (
-                <TicTacToeBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'gomoku' && (
-                <GomokuBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'mancala' && (
-                <MancalaBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'dotsboxes' && (
-                <DotsBoxesBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'navalbattle' && (
-                <NavalBattleBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'go' && (
-                <GoBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'backgammon' && (
-                <BackgammonBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
-              {game.gameType === 'cribbage' && (
-                <CribbageBoard
-                  gameState={game.gameState}
-                  playerId={game.playerId || ''}
-                  onMove={game.makeMove}
-                  onQuit={handleLeave}
-                />
-              )}
+              <ErrorBoundary>
+                {(() => {
+                  const gameType = game.gameType || 'checkers';
+                  const BoardComponent = BOARD_COMPONENTS[gameType as GameType];
+                  if (!BoardComponent) return null;
+                  return (
+                    <BoardComponent
+                      gameState={game.gameState}
+                      playerId={game.playerId || ''}
+                      onMove={game.makeMove}
+                      onQuit={handleLeave}
+                    />
+                  );
+                })()}
+              </ErrorBoundary>
             </div>
 
             {/* Chat */}

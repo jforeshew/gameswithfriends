@@ -5,8 +5,18 @@ import { Position } from '@/lib/types';
 
 type Connect4Color = 'red' | 'yellow';
 
+interface Connect4State {
+  board: (Connect4Color | null)[][];
+  currentTurn: Connect4Color;
+  players: { red: string; yellow: string };
+  winner: string | null;
+  winReason: string | null;
+  lastMove: Position | null;
+  winningCells: Position[] | null;
+}
+
 interface Connect4BoardProps {
-  gameState: any; // Connect4 state from server
+  gameState: Connect4State;
   playerId: string;
   onMove: (from: Position, to: Position) => void; // from is unused, to.col = column
   onQuit: () => void;

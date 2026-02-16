@@ -22,7 +22,7 @@ interface BackgammonGameState {
 }
 
 interface BackgammonBoardProps {
-  gameState: any;
+  gameState: BackgammonGameState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

@@ -5,8 +5,17 @@ import { Position } from '@/lib/types';
 
 type TicTacToeMark = 'X' | 'O';
 
+interface TicTacToeState {
+  board: (TicTacToeMark | null)[][];
+  currentTurn: TicTacToeMark;
+  players: { X: string; O: string };
+  winner: string | null;
+  winReason: string | null;
+  winningCells: Position[] | null;
+}
+
 interface TicTacToeBoardProps {
-  gameState: any;
+  gameState: TicTacToeState;
   playerId: string;
   onMove: (from: Position, to: Position) => void;
   onQuit: () => void;

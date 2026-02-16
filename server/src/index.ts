@@ -45,7 +45,7 @@ function getEngine(gameType: GameType): any {
     case 'go': return goEngine;
     case 'backgammon': return backgammonEngine;
     case 'cribbage': return cribbageEngine;
-    default: return checkersEngine;
+    default: throw new Error(`Unknown game type: ${gameType}`);
   }
 }
 
@@ -569,6 +569,15 @@ io.on('connection', (socket) => {
       disconnectTimers.set(timerId, timer);
     }
   });
+});
+
+// Process-level error handlers to prevent silent crashes
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
 });
 
 httpServer.listen(PORT, () => {
