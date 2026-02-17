@@ -6,6 +6,8 @@ import {
   ClientToServerEvents,
   ServerToClientEvents,
   GameType,
+  GameEngine,
+  Position,
 } from './types';
 import {
   createRoom,
@@ -31,8 +33,7 @@ import { goEngine } from './games/go';
 import { backgammonEngine } from './games/backgammon';
 import { cribbageEngine } from './games/cribbage';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getEngine(gameType: GameType): any {
+function getEngine(gameType: GameType): GameEngine<unknown, { from: Position; to: Position }> {
   switch (gameType) {
     case 'checkers': return checkersEngine;
     case 'chess': return chessEngine;
@@ -87,6 +88,12 @@ app.get('/api/rooms/:code', (req, res) => {
   });
 });
 
+// Valid game types (must match GameType union)
+const VALID_GAME_TYPES: Set<string> = new Set([
+  'checkers', 'chess', 'connect4', 'reversi', 'tictactoe', 'gomoku',
+  'mancala', 'dotsboxes', 'navalbattle', 'go', 'backgammon', 'cribbage',
+]);
+
 // Rate limiting
 const lastEventTime = new Map<string, number>();
 
@@ -138,6 +145,11 @@ io.on('connection', (socket) => {
       return;
     }
 
+    if (!VALID_GAME_TYPES.has(gameType)) {
+      socket.emit('room:error', { message: 'Invalid game type' });
+      return;
+    }
+
     const { room, player } = createRoom(gameType, playerName.trim());
     player.socketId = socket.id;
     updateSocketIndex(socket.id, room.code, player.id);
@@ -165,6 +177,11 @@ io.on('connection', (socket) => {
 
   // --- Room Joining ---
   socket.on('room:join', ({ roomCode, playerName, sessionToken }) => {
+    if (isRateLimited(socket.id, 2000)) {
+      socket.emit('room:error', { message: 'Too many requests, slow down' });
+      return;
+    }
+
     const code = roomCode.toUpperCase();
 
     // Try reconnection first
@@ -377,12 +394,12 @@ io.on('connection', (socket) => {
       winResult = engine.checkWinner(newState);
     } catch (err) {
       console.error(`[game:move] Winner check error in ${room.gameType}:`, err);
-      // Continue - game state is valid, winner detection failed
-      return;
+      // Don't return — game state was already updated and sent to players
     }
     if (winResult && winResult.winner) {
-      newState.winner = winResult.winner;
-      newState.winReason = winResult.reason ?? null;
+      const stateObj = newState as Record<string, unknown>;
+      stateObj.winner = winResult.winner;
+      stateObj.winReason = winResult.reason ?? null;
       room.status = 'finished';
 
       const winnerId = winResult.winner;

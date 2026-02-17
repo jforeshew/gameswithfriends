@@ -335,7 +335,7 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
           </div>
         )}
 
-        {(game.roomStatus === 'playing' || game.roomStatus === 'finished') && game.gameState && (
+        {(game.roomStatus === 'playing' || game.roomStatus === 'finished') && !!game.gameState && (
           <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto">
             {/* Game Board */}
             <div className="flex-1 flex items-start justify-center">

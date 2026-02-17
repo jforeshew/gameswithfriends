@@ -63,8 +63,7 @@ export function useGame({ socket }: UseGameOptions) {
   const [gameType, setGameType] = useState<GameType | null>(
     () => loadCached<GameType>('gameType'),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [gameState, setGameState] = useState<any | null>(
+  const [gameState, setGameState] = useState<unknown>(
     () => loadCached<unknown>('gameState'),
   );
   const [gameOver, setGameOver] = useState<GameOverData | null>(null);
@@ -152,7 +151,7 @@ export function useGame({ socket }: UseGameOptions) {
         // If we haven't received game:state yet, request it.
         setRoomStatus('playing');
         saveCache('roomStatus', 'playing');
-        setGameState((current: any) => {
+        setGameState((current: unknown) => {
           if (!current) {
             // We missed the individual game:state — request it
             socket.emit('game:request-state');

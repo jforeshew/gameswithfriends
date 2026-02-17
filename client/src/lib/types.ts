@@ -38,5 +38,5 @@ export interface ChatMessage {
   playerName: string | null;
   text: string;
   timestamp: number;
-  isSystem?: boolean;
+  isSystem: boolean;
 }
