@@ -45,6 +45,10 @@ export function createRoom(gameType: GameType, playerName: string): { room: Room
   return { room, player };
 }
 
+export function getActiveRoomCount(): number {
+  return rooms.size;
+}
+
 export function getRoom(code: string): Room | undefined {
   return rooms.get(code.toUpperCase());
 }

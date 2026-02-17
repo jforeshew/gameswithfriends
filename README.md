@@ -104,6 +104,48 @@ NEXT_PUBLIC_SERVER_URL=http://localhost:3001
 5. Create a board component in `client/src/components/game/`
 6. Add the game card to the landing page grid
 
+## Deployment
+
+### Server (Railway)
+
+1. Create a new project on [Railway](https://railway.app)
+2. Connect your GitHub repo
+3. Set the root directory to `server`
+4. Add environment variables:
+   - `CLIENT_URL` = your Vercel frontend URL (e.g. `https://your-app.vercel.app`)
+   - `PORT` is set automatically by Railway
+5. Deploy — Railway will use the `railway.json` config
+
+### Client (Vercel)
+
+1. Import your GitHub repo on [Vercel](https://vercel.com)
+2. Set the root directory to `client`
+3. Add environment variables:
+   - `NEXT_PUBLIC_SERVER_URL` = your Railway server URL (e.g. `https://your-server.up.railway.app`)
+4. Deploy — Vercel will auto-detect Next.js
+
+### After deploying both
+
+Update `CLIENT_URL` on Railway to match your Vercel URL so CORS works correctly. Both services need to know each other's URL.
+
+## Stats API
+
+The server exposes a `GET /api/stats` endpoint that returns:
+
+```json
+{
+  "uptime": 3600,
+  "roomsCreated": 42,
+  "gamesStarted": 35,
+  "gamesCompleted": 28,
+  "movesMade": 1250,
+  "gamesByType": { "chess": 10, "checkers": 8, "connect4": 17 },
+  "activeRooms": 3
+}
+```
+
+Stats are in-memory and reset on server restart.
+
 ## Features
 
 - Real-time gameplay via WebSockets

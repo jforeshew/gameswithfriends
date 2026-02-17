@@ -12,6 +12,7 @@ import {
 import {
   createRoom,
   getRoom,
+  getActiveRoomCount,
   joinRoom,
   reconnectPlayer,
   disconnectPlayer,
@@ -20,6 +21,13 @@ import {
   getPlayersInfo,
   updateSocketIndex,
 } from './rooms';
+import {
+  getStats,
+  incrementRoomsCreated,
+  incrementGamesStarted,
+  incrementGamesCompleted,
+  incrementMovesMade,
+} from './stats';
 import { checkersEngine } from './games/checkers';
 import { chessEngine } from './games/chess';
 import { connect4Engine } from './games/connect4';
@@ -88,6 +96,11 @@ app.get('/api/rooms/:code', (req, res) => {
   });
 });
 
+// Stats endpoint
+app.get('/api/stats', (_req, res) => {
+  res.json({ ...getStats(), activeRooms: getActiveRoomCount() });
+});
+
 // Valid game types (must match GameType union)
 const VALID_GAME_TYPES: Set<string> = new Set([
   'checkers', 'chess', 'connect4', 'reversi', 'tictactoe', 'gomoku',
@@ -154,6 +167,7 @@ io.on('connection', (socket) => {
     player.socketId = socket.id;
     updateSocketIndex(socket.id, room.code, player.id);
     socket.join(room.code);
+    incrementRoomsCreated();
 
     addChatMessage(room, null, `${player.name} created the room`, true);
 
@@ -310,6 +324,7 @@ io.on('connection', (socket) => {
     }
     room.gameState = gameState;
     room.status = 'playing';
+    incrementGamesStarted(room.gameType);
 
     addChatMessage(room, null, 'Game started!', true);
 
@@ -380,6 +395,7 @@ io.on('connection', (socket) => {
     }
     room.gameState = newState;
     room.lastActivity = Date.now();
+    incrementMovesMade();
 
     // Send updated state to all players
     for (const p of room.players) {
@@ -401,6 +417,7 @@ io.on('connection', (socket) => {
       stateObj.winner = winResult.winner;
       stateObj.winReason = winResult.reason ?? null;
       room.status = 'finished';
+      incrementGamesCompleted();
 
       const winnerId = winResult.winner;
       const winReason = winResult.reason ?? 'Game over';
@@ -429,6 +446,7 @@ io.on('connection', (socket) => {
     // Handle draw (winner is null but game is over)
     if (winResult && !winResult.winner) {
       room.status = 'finished';
+      incrementGamesCompleted();
       const drawReason = winResult.reason ?? 'Draw';
 
       for (const p of room.players) {
@@ -495,6 +513,7 @@ io.on('connection', (socket) => {
     }
     room.gameState = gameState;
     room.status = 'playing';
+    incrementGamesStarted(room.gameType);
 
     addChatMessage(room, null, 'New game started!', true);
 
@@ -581,6 +600,7 @@ io.on('connection', (socket) => {
           }
         }
         currentRoom.status = 'finished';
+        incrementGamesCompleted();
 
         addChatMessage(currentRoom, null, `${player.name} forfeited (disconnected for too long)`, true);
 
