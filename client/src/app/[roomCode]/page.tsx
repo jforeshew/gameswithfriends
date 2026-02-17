@@ -404,6 +404,8 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
           isWinner={game.gameOver.winner === game.playerId}
           onPlayAgain={game.restartGame}
           onLeave={handleLeave}
+          onSwitchGame={game.switchGame}
+          currentGameType={game.gameType || undefined}
         />
       )}
     </div>

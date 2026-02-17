@@ -165,8 +165,12 @@ export function useGame({ socket }: UseGameOptions) {
         setRoomStatus('finished');
       },
 
-      'game:restarted': () => {
+      'game:restarted': (data?: { gameType?: string }) => {
         setGameOver(null);
+        if (data?.gameType) {
+          setGameType(data.gameType as GameType);
+          saveCache('gameType', data.gameType);
+        }
       },
 
       'chat:message': (msg: unknown) => {
@@ -240,6 +244,14 @@ export function useGame({ socket }: UseGameOptions) {
     socket.emit('game:restart');
   }, [socket]);
 
+  const switchGame = useCallback(
+    (gameType: string) => {
+      if (!socket) return;
+      socket.emit('game:switch-game', { gameType });
+    },
+    [socket],
+  );
+
   const sendMessage = useCallback(
     (text: string) => {
       if (!socket) return;
@@ -265,6 +277,7 @@ export function useGame({ socket }: UseGameOptions) {
     makeMove,
     startGame,
     restartGame,
+    switchGame,
     sendMessage,
   };
 }

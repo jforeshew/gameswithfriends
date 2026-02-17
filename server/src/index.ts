@@ -531,6 +531,71 @@ io.on('connection', (socket) => {
     });
   });
 
+  // --- Game Switch (different game type) ---
+  socket.on('game:switch-game', ({ gameType: newGameType }) => {
+    const found = findRoomBySocketId(socket.id);
+    if (!found) return;
+
+    const { room, player } = found;
+    if (room.players.length < 2) return;
+
+    if (player.id !== room.creatorId) {
+      socket.emit('room:error', { message: 'Only the room creator can switch the game' });
+      return;
+    }
+
+    if (room.status !== 'finished') {
+      socket.emit('room:error', { message: 'Game must be finished to switch games' });
+      return;
+    }
+
+    if (!VALID_GAME_TYPES.has(newGameType)) {
+      socket.emit('room:error', { message: 'Invalid game type' });
+      return;
+    }
+
+    const engine = getEngine(newGameType as GameType);
+    const playerIds: [string, string] = [room.players[0].id, room.players[1].id];
+
+    let gameState;
+    try {
+      gameState = engine.initGame(playerIds);
+    } catch (err) {
+      console.error(`[game:switch-game] Engine error in ${newGameType}:`, err);
+      socket.emit('room:error', { message: 'Failed to initialize game' });
+      return;
+    }
+
+    room.gameType = newGameType as GameType;
+    room.gameState = gameState;
+    room.status = 'playing';
+    incrementGamesStarted(room.gameType);
+
+    // Game name lookup for chat message
+    const GAME_NAMES: Record<string, string> = {
+      checkers: 'Checkers', chess: 'Chess', connect4: 'Four in a Row',
+      reversi: 'Reversi', tictactoe: 'Tic-Tac-Toe', gomoku: 'Gomoku',
+      mancala: 'Mancala', dotsboxes: 'Dots & Boxes', navalbattle: 'Naval Battle',
+      go: 'Go', backgammon: 'Backgammon', cribbage: 'Cribbage',
+    };
+    const gameName = GAME_NAMES[newGameType] || newGameType;
+
+    addChatMessage(room, null, `Switched to ${gameName}! New game started!`, true);
+
+    for (const p of room.players) {
+      if (p.socketId) {
+        io.to(p.socketId).emit('game:state', engine.getState(room.gameState, p.id));
+      }
+    }
+
+    io.to(room.code).emit('game:started');
+    io.to(room.code).emit('game:restarted', { gameType: newGameType });
+    io.to(room.code).emit('chat:system', {
+      text: `Switched to ${gameName}! New game started!`,
+      timestamp: Date.now(),
+    });
+  });
+
   // --- Chat ---
   socket.on('chat:message', ({ text }) => {
     if (isRateLimited(socket.id, 500)) return;

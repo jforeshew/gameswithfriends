@@ -86,6 +86,7 @@ export interface ClientToServerEvents {
   'game:move': (data: { from: Position; to: Position }) => void;
   'game:start': () => void;
   'game:restart': () => void;
+  'game:switch-game': (data: { gameType: GameType }) => void;
   'game:request-state': () => void;
   'chat:message': (data: { text: string }) => void;
 }
@@ -101,7 +102,7 @@ export interface ServerToClientEvents {
   'game:state': (state: unknown) => void;
   'game:started': () => void;
   'game:over': (data: { winner: string; winnerName: string; reason: string }) => void;
-  'game:restarted': () => void;
+  'game:restarted': (data?: { gameType?: GameType }) => void;
   'chat:message': (data: { playerName: string; text: string; timestamp: number }) => void;
   'chat:system': (data: { text: string; timestamp: number }) => void;
   'chat:history': (data: ChatMessage[]) => void;
