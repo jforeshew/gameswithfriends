@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Games with Friends',
+  title: 'Your Turn',
   description: 'Play classic board games with your friends in real time',
 };
 

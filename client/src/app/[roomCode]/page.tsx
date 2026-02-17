@@ -293,7 +293,7 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
             onClick={() => router.push('/')}
             className="text-cream-100 font-bold text-lg hover:text-wood-300 transition-colors"
           >
-            GWF
+            YT
           </button>
           <span className="text-wood-500 text-sm">|</span>
           <span className="font-mono text-wood-300 text-sm tracking-wider">{code}</span>

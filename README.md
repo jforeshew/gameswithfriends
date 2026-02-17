@@ -1,4 +1,4 @@
-# Games with Friends
+# Your Turn
 
 Play classic board games with your friends in real time — no sign-up required.
 

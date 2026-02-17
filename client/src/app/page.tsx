@@ -136,7 +136,7 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-cream-50 mb-3 tracking-tight">
-            Games with Friends
+            Your Turn
           </h1>
           <p className="text-wood-300 text-lg">
             Play classic board games together — no sign-up required

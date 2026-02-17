@@ -201,7 +201,7 @@ function CardBack({ size = 'normal' }: { size?: 'small' | 'normal' }) {
       `}
     >
       <div className="w-[75%] h-[80%] rounded border border-blue-400/30 bg-blue-800/50 flex items-center justify-center">
-        <div className="text-blue-300/40 text-lg font-serif">GWF</div>
+        <div className="text-blue-300/40 text-lg font-serif">YT</div>
       </div>
     </div>
   );

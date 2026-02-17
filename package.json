@@ -1,5 +1,5 @@
 {
-  "name": "games-with-friends",
+  "name": "yourturn",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
