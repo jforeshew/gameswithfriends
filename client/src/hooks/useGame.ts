@@ -68,6 +68,7 @@ export function useGame({ socket }: UseGameOptions) {
   );
   const [gameOver, setGameOver] = useState<GameOverData | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [switchingGame, setSwitchingGame] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Store handler references so cleanup only removes OUR handlers
@@ -142,6 +143,7 @@ export function useGame({ socket }: UseGameOptions) {
       'game:state': (state: unknown) => {
         setGameState(state);
         setRoomStatus('playing');
+        setSwitchingGame(false);
         saveCache('gameState', state);
         saveCache('roomStatus', 'playing');
       },
@@ -168,8 +170,11 @@ export function useGame({ socket }: UseGameOptions) {
       'game:restarted': (data?: { gameType?: string }) => {
         setGameOver(null);
         if (data?.gameType) {
+          // Clear old game state before switching board component
+          setGameState(null);
           setGameType(data.gameType as GameType);
           saveCache('gameType', data.gameType);
+          setSwitchingGame(true);
         }
       },
 
@@ -247,6 +252,7 @@ export function useGame({ socket }: UseGameOptions) {
   const switchGame = useCallback(
     (gameType: string) => {
       if (!socket) return;
+      setSwitchingGame(true);
       socket.emit('game:switch-game', { gameType });
     },
     [socket],
@@ -270,6 +276,7 @@ export function useGame({ socket }: UseGameOptions) {
     gameType,
     gameState,
     gameOver,
+    switchingGame,
     chatMessages,
     error,
     createRoom,

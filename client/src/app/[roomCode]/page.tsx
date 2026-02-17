@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { GameType } from '@/lib/types';
+import { GAMES } from '@/lib/games';
+import { GameIcon } from '@/components/ui/GameIcons';
 import { ComponentType } from 'react';
 
 interface BoardProps {
@@ -335,11 +337,24 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
           </div>
         )}
 
-        {(game.roomStatus === 'playing' || game.roomStatus === 'finished') && !!game.gameState && (
+        {(game.roomStatus === 'playing' || game.roomStatus === 'finished') && game.switchingGame && (
+          <div className="flex items-center justify-center py-24">
+            <div className="text-center">
+              <div className="mb-4 [&_svg]:w-20 [&_svg]:h-20 animate-pulse">
+                <GameIcon gameId={game.gameType || 'checkers'} />
+              </div>
+              <p className="text-cream-200 text-lg font-medium">
+                Switching to {GAMES.find(g => g.id === game.gameType)?.name || 'new game'}...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {(game.roomStatus === 'playing' || game.roomStatus === 'finished') && !game.switchingGame && !!game.gameState && (
           <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto">
             {/* Game Board */}
             <div className="flex-1 flex items-start justify-center">
-              <ErrorBoundary>
+              <ErrorBoundary key={game.gameType}>
                 {(() => {
                   const gameType = game.gameType || 'checkers';
                   const BoardComponent = BOARD_COMPONENTS[gameType as GameType];

@@ -582,6 +582,9 @@ io.on('connection', (socket) => {
 
     addChatMessage(room, null, `Switched to ${gameName}! New game started!`, true);
 
+    // Emit gameType change BEFORE game:state so clients switch board components first
+    io.to(room.code).emit('game:restarted', { gameType: newGameType });
+
     for (const p of room.players) {
       if (p.socketId) {
         io.to(p.socketId).emit('game:state', engine.getState(room.gameState, p.id));
@@ -589,7 +592,6 @@ io.on('connection', (socket) => {
     }
 
     io.to(room.code).emit('game:started');
-    io.to(room.code).emit('game:restarted', { gameType: newGameType });
     io.to(room.code).emit('chat:system', {
       text: `Switched to ${gameName}! New game started!`,
       timestamp: Date.now(),
