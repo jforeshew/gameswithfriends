@@ -69,6 +69,7 @@ export function useGame({ socket }: UseGameOptions) {
   const [gameOver, setGameOver] = useState<GameOverData | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [switchingGame, setSwitchingGame] = useState(false);
+  const switchStartRef = useRef<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   // Store handler references so cleanup only removes OUR handlers
@@ -143,9 +144,20 @@ export function useGame({ socket }: UseGameOptions) {
       'game:state': (state: unknown) => {
         setGameState(state);
         setRoomStatus('playing');
-        setSwitchingGame(false);
         saveCache('gameState', state);
         saveCache('roomStatus', 'playing');
+
+        // Ensure switching screen shows for at least 600ms
+        const elapsed = Date.now() - switchStartRef.current;
+        if (switchStartRef.current > 0 && elapsed < 600) {
+          setTimeout(() => {
+            setSwitchingGame(false);
+            switchStartRef.current = 0;
+          }, 600 - elapsed);
+        } else {
+          setSwitchingGame(false);
+          switchStartRef.current = 0;
+        }
       },
 
       'game:started': () => {
@@ -174,6 +186,9 @@ export function useGame({ socket }: UseGameOptions) {
           setGameState(null);
           setGameType(data.gameType as GameType);
           saveCache('gameType', data.gameType);
+          if (!switchStartRef.current) {
+            switchStartRef.current = Date.now();
+          }
           setSwitchingGame(true);
         }
       },
@@ -252,6 +267,7 @@ export function useGame({ socket }: UseGameOptions) {
   const switchGame = useCallback(
     (gameType: string) => {
       if (!socket) return;
+      switchStartRef.current = Date.now();
       setSwitchingGame(true);
       socket.emit('game:switch-game', { gameType });
     },
