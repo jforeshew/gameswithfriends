@@ -15,6 +15,7 @@ interface GameOverModalProps {
   onLeave: () => void;
   onSwitchGame?: (gameType: string) => void;
   currentGameType?: string;
+  isCreator?: boolean;
 }
 
 export function GameOverModal({
@@ -26,6 +27,7 @@ export function GameOverModal({
   onLeave,
   onSwitchGame,
   currentGameType,
+  isCreator,
 }: GameOverModalProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -77,11 +79,14 @@ export function GameOverModal({
         <p className="text-cream-200 mb-1">{winnerName} wins!</p>
         <p className="text-wood-400 text-sm mb-8">{reason}</p>
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button onClick={onPlayAgain}>Play Again</Button>
-          {onSwitchGame && (
+          {isCreator && <Button onClick={onPlayAgain}>Play Again</Button>}
+          {isCreator && onSwitchGame && (
             <Button variant="secondary" onClick={() => setShowPicker(true)}>
               Different Game
             </Button>
+          )}
+          {!isCreator && (
+            <p className="text-wood-400 text-sm mb-2">Waiting for host to start next game...</p>
           )}
           <Button variant="ghost" onClick={onLeave}>
             Leave

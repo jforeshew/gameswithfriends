@@ -421,6 +421,7 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
           onLeave={handleLeave}
           onSwitchGame={game.switchGame}
           currentGameType={game.gameType || undefined}
+          isCreator={game.playerId === creatorId}
         />
       )}
     </div>
